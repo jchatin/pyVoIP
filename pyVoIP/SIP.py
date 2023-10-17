@@ -382,9 +382,12 @@ class SIPMessage:
             self.type = SIPMessageType.MESSAGE
             self.parseSIPMessage(data)
         else:
-            raise SIPParseError(
+            self.type = SIPMessageType.MESSAGE
+            self.parseSIPMessage(data)
+            debug (
                 "Unable to decipher SIP request: " + str(heading, "utf8")
             )
+            return
 
     def parseHeader(self, header: str, data: str) -> None:
         warnings.warn(
@@ -1296,7 +1299,7 @@ class SIPClient:
         # TODO: Add Supported
         response += f"User-Agent: pyVoIP {pyVoIP.__version__}\r\n"
         response += 'Warning: 399 GS "Unable to accept call"\r\n'
-        response += f"Allow: {(', '.join(pyVoIP.SIPCompatibleMethods))}\r\n"
+        response += f"Allow: {(','.join(pyVoIP.SIPCompatibleMethods))}\r\n"
         response += "Content-Length: 0\r\n\r\n"
 
         return response
