@@ -685,7 +685,6 @@ class VoIPPhone:
         port = self.request_port()
         medias = {}
         medias[port] = {0: RTP.PayloadType.PCMU, 101: RTP.PayloadType.EVENT}
-        request, call_id, sess_id = self.sip.invite(
         request, call_id, sess_id, call_state = self.sip.invite(
             number, medias, RTP.TransmitType.SENDRECV
         )
