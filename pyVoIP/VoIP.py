@@ -1,5 +1,5 @@
 from enum import Enum
-from pyVoIP import SIP, RTP
+from pyVoIP import SIP, RTP, debug
 from threading import Timer, Lock
 from typing import Any, Callable, Dict, List, Optional
 import audioop
@@ -18,9 +18,6 @@ __all__ = [
     "VoIPCall",
     "VoIPPhone",
 ]
-
-debug = pyVoIP.debug
-
 
 class InvalidRangeError(Exception):
     pass
@@ -689,17 +686,21 @@ class VoIPPhone:
         medias = {}
         medias[port] = {0: RTP.PayloadType.PCMU, 101: RTP.PayloadType.EVENT}
         request, call_id, sess_id = self.sip.invite(
+        request, call_id, sess_id, call_state = self.sip.invite(
             number, medias, RTP.TransmitType.SENDRECV
         )
+        call_state = CallState(call_state)
         self.calls[call_id] = VoIPCall(
             self,
-            CallState.DIALING,
+            #CallState.DIALING,
+            call_state,
             request,
             sess_id,
             self.myIP,
             ms=medias,
             sendmode=self.sendmode,
         )
+        debug(f"DEBUG VOIP call : {self.calls[call_id].state}")
 
         return self.calls[call_id]
 
