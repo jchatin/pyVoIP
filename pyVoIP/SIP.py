@@ -828,6 +828,7 @@ class SIPClient:
         self.default_expires = 120
         self.register_timeout = 30
         self.invite_timeout = 40 
+        self.invite_timeout = 45 
 
         self.inviteCounter = Counter()
         self.registerCounter = Counter()
@@ -1644,8 +1645,8 @@ class SIPClient:
         received_180 = False
 
         while ( 
-          not received_180 
-          or self.invite_timeout <= (time.monotonic() - invite_start_time)
+          not received_180
+          and self.invite_timeout >= (time.monotonic() - invite_start_time)
         ):
             debug(f"Looping Invite on response : {response.status}")
             '''
@@ -1701,8 +1702,15 @@ class SIPClient:
                   debug("SIP already received 407 after 100 and already send Proxy INVITE : WHY ??? ")
                   received_407 = True  # Réinitialise received_401
                   
-              elif response.status == SIPStatus(200):
-                  debug("received 200")
+              elif response.status == SIPStatus(480):
+                  debug("received 480 Temporarily Unavailable")
+                  ack = self.genAck(response)
+                  self.out.sendto(ack.encode("utf8"), (self.server, self.port))
+                  debug("Acknowledged")
+                  break
+
+              elif response.status == SIPStatus(200) or response.status == SIPStatus(183):
+                  logger.debug("received 200")
                   ack = self.genAck(response)
                   self.out.sendto(ack.encode("utf8"), (self.server, self.port))
                   debug("Acknowledged")
